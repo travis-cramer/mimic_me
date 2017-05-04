@@ -2,7 +2,7 @@
 
 This is the code behind the world-renowned twitter bot Mimic Me (@get_mimicked).
 
-This bot responds to tweets containing "Mimic me @\<your handle\>" by mimicking the other user based on their twitter history.
+This bot responds to tweets containing "Mimic me @\<your bot's handle\>" by mimicking the tweeting user based on their twitter history.
 
 The script main.py will take care of almost everything.
 
