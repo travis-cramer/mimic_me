@@ -1,4 +1,4 @@
-# Last modified: May 3, 2017 11:18pm
+# Last modified: May 3, 2017 11:33pm
 # This script, using a Twitter API, operates the @get_mimicked Twitter acount. 
 
 
