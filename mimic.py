@@ -17,7 +17,8 @@ import datetime as dt
 passwords_file = open('passwords.txt', 'r')
 passwords = passwords_file.readlines()
 for password in passwords:
-	password = password.replace('\n', '')
+	passwords[passwords.index(password)] = password.replace('\n', '')
+
 
 
 twitter_consumer_key = passwords[0]
