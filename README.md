@@ -15,4 +15,4 @@ You just need two local text files:
     main.py can keep track of which mentions (tweet containing your twitter bot's handle) that your bot has already 
     responded to.
     
-The only edit to main.py that you need to make is to reset the variable my_handle (at the top of the script).
+Have fun!
