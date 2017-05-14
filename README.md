@@ -16,6 +16,6 @@ But here is what additions you need:
     (id INT, screen_name TEXT, date_time TEXT). Of course, you may choose to name these things differently, just edit the 
     main.py script accordingly.
 
-NOTE: If you do not wish to bother MySQl, another option for recording past mimics is in the code, it's just commented out.
+NOTE: If you do not wish to bother MySQL, another option for recording past mimics is in the code, it's just commented out.
 You will need to uncomment the code responsible for opening the text file "past_mimics.txt" and for writing into it when a new 
 mention is found.
