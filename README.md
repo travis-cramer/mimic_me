@@ -2,8 +2,7 @@
 
 This is the code behind the world-renowned twitter bot Mimic Me ([@get_mimicked](https://twitter.com/get_mimicked)).
 
-This bot responds to mentions (tweets with the bot's handle tagged within) containing the words "Mimic me" by mimicking the tweeting user based on their twitter history.
-
+This bot responds to mentions (tweets with the bot's handle tagged within) containing the words "Mimic me" by mimicking the tweeting user based on their twitter history using Markov Chains to randomly generate strings of words. Sometimes the results are grammatically correct. Most of the time, they're not. For entertainment purposes only.
 
 You can create an exact relica of this twitter bot with this public repository.
 
