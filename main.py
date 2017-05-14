@@ -30,6 +30,8 @@ twitter_access_token = passwords[2]
 twitter_access_secret = passwords[3]
 my_admin_password = passwords[4]
 
+passwords_file.close()
+
 
 # instantiate API
 twitter_api = twitter.Api(consumer_key=twitter_consumer_key, consumer_secret=twitter_consumer_secret, 
