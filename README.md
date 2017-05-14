@@ -1,6 +1,6 @@
 # Mimic Me (@get_mimicked)
 
-This is the code behind the world-renowned twitter bot Mimic Me (@get_mimicked).
+This is the code behind the world-renowned twitter bot Mimic Me ([@get_mimicked](https://twitter.com/get_mimicked)).
 
 This bot responds to mentions (tweets with the bot's handle tagged within) containing the words "Mimic me" by mimicking the tweeting user based on their twitter history.
 
