@@ -8,11 +8,11 @@ The script main.py will take care of almost everything.
 
 But here is what additions you need:
 
--A text file named 'passwords.txt' containing your twitter consumer key, twitter consumer secret, twitter access token,
+* A text file named 'passwords.txt' containing your twitter consumer key, twitter consumer secret, twitter access token,
     twitter access secret (for your Twitter REST API), and your local administrative password. An example of this document is 
     in the repository as "passwords_example.txt".
 
--A locally hosted MySQL database named 'my_database' with a table named 'past_mimics' with columns 
+* A locally hosted MySQL database named 'my_database' with a table named 'past_mimics' with columns 
     (id INT, screen_name TEXT, date_time TEXT). Of course, you may choose to name these things differently, just edit the 
     main.py script accordingly.
 
