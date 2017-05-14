@@ -1,4 +1,4 @@
-# mimic_me
+# Mimic Me (@get_mimicked)
 
 This is the code behind the world-renowned twitter bot Mimic Me (@get_mimicked).
 
