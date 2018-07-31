@@ -59,6 +59,7 @@ def remove_last_word(sentence):
 
 
 def mimic_me(handle):
+	# Takes in the other user's twitter handle and returns a tweet in the style of their tweets
 	statuses = twitter_api.GetUserTimeline(screen_name = handle, count = 1000, include_rts = False)
 	text = ""
 	for status in statuses:
