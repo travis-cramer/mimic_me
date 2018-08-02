@@ -22,11 +22,6 @@ passwords = passwords_file.readlines()
 for password in passwords:
 	passwords[passwords.index(password)] = password.replace('\n', '')
 
-# hello
-this_is_a_variable = 'this is a variable'
-
-variable = 'variable'
-
 twitter_consumer_key = passwords[0]
 twitter_consumer_secret = passwords[1]
 twitter_access_token = passwords[2]
