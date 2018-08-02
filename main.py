@@ -23,6 +23,7 @@ for password in passwords:
 	passwords[passwords.index(password)] = password.replace('\n', '')
 
 # hello
+this_is_a_variable = 'this is a variable'
 
 variable = 'variable'
 
