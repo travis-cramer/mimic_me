@@ -24,6 +24,8 @@ for password in passwords:
 
 # hello
 
+variable = 'variable'
+
 twitter_consumer_key = passwords[0]
 twitter_consumer_secret = passwords[1]
 twitter_access_token = passwords[2]
