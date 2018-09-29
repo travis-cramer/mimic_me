@@ -151,7 +151,7 @@ def main():
 					
 					if result != 0:
 						twitter_api.PostUpdates('Mimicking ' + ('@%s: ' % (their_handle)) + result)
-						print 'New mimic: %s' %(their_handle)
+						print 'New mimic: @%s' %(their_handle)
 					elif result == 0:
 						try:
 							twitter_api.PostUpdates('@%s ' % (their_handle) + 'Sorry, you must have at least 100 words tweeted in total to be mimicked.')
@@ -159,7 +159,7 @@ def main():
 							pass
 				else:
 					twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
-					print "Made an informational response to %s" %(their_handle)
+					print "Made an informational response to @%s" %(their_handle)
 
 				if use_mysql:
 					# record the new mention (and correlated successful response/reply) into database
@@ -184,7 +184,6 @@ def main():
 			file_2.close()
 
 		print 'Now waiting 5 minutes...'
-		print '-----------------------------------------------------'
 
 		# sleep for 5~ minutes before checking twitter again for new mentions
 		time.sleep(300)
