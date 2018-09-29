@@ -13,6 +13,10 @@ import twitter
 
 from markov_python.cc_markov import MarkovChain
 
+# configurations
+use_mysql = False  # uses a local mysql database rather than a .txt file -- requires some setup
+forever = False  # runs while loop forever -- instead of using a scheduler like cron
+
 # import passwords for Twitter REST API from local text file
 passwords_file = open('passwords.txt', 'r')
 passwords = passwords_file.readlines()
@@ -24,7 +28,6 @@ twitter_consumer_secret = passwords[1]
 twitter_access_token = passwords[2]
 twitter_access_secret = passwords[3]
 
-use_mysql = False
 if use_mysql:
 	import mysql.connector
 	mysql_password = passwords[4]
@@ -104,92 +107,91 @@ def mimic_me(handle):
 
 
 def main():
-	# infinitely loop while running script
-	while True:
-		print '-----------------------------------------------------'
-		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+	# get past mimics 
+	if use_mysql:
+		# connect to mysql for storing past_mimics data
+		cnx = mysql.connector.connect(user='travis.cramer14@gmail.com', password=my_mysql_password, 
+											host='127.0.0.1', database='my_database')
+		# instantiate cursor for querying
+		cursor = cnx.cursor()
 
-		# get past mimics 
-		if use_mysql:
-			# connect to mysql for storing past_mimics data
-			cnx = mysql.connector.connect(user='travis.cramer14@gmail.com', password=my_mysql_password, 
-												host='127.0.0.1', database='my_database')
-			# instantiate cursor for querying
-			cursor = cnx.cursor()
+		# get all past mimics into list
+		cursor.execute("SELECT screen_name, date_time FROM past_mimics")
+		past_mimics = []
+		for (screen_name, date_time) in cursor:
+			past_mimics.append(screen_name + ' ' + date_time)
+	else:
+		# open past_mimics for reading and appending
+		file_1 = open('past_mimics.txt', 'r')
+		file_2 = open('past_mimics.txt', 'a')
 
-			# get all past mimics into list
-			cursor.execute("SELECT screen_name, date_time FROM past_mimics")
-			past_mimics = []
-			for (screen_name, date_time) in cursor:
-				past_mimics.append(screen_name + ' ' + date_time)
-		else:
-			# open past_mimics for reading and appending
-			file_1 = open('past_mimics.txt', 'r')
-			file_2 = open('past_mimics.txt', 'a')
+		# get all past_mimics into list
+		past_mimics = file_1.readlines()
+		for mimic in past_mimics:
+			past_mimics[past_mimics.index(mimic)] = mimic.replace('\n', '')
 
-			# get all past_mimics into list
-			past_mimics = file_1.readlines()
-			for mimic in past_mimics:
-				past_mimics[past_mimics.index(mimic)] = mimic.replace('\n', '')
+	# collect 20 most recent mentions
+	mentions = twitter_api.GetMentions(count=20)
 
-		# collect 20 most recent mentions
-		mentions = twitter_api.GetMentions(count=20)
+	# check if new mention, check if 'mimic me' is in mention, then create mimic and post mimic of mentioner
+	new_mention = False
+	for mention in mentions:
+		their_handle = mention.user.screen_name
+		mention_simple = mention.user.screen_name + ' ' + mention.created_at
 
-		# check if new mention, check if 'mimic me' is in mention, then create mimic and post mimic of mentioner
-		new_mention = False
-		for mention in mentions:
-			their_handle = mention.user.screen_name
-			mention_simple = mention.user.screen_name + ' ' + mention.created_at
+		if mention_simple not in past_mimics:
+			new_mention = True
 
-			if mention_simple not in past_mimics:
-				new_mention = True
-
-				if ('mimic me' in mention.text) or ('Mimic me' in mention.text) or ('Mimic Me' in mention.text) or ('Mimic me.' in mention.text):
-					#send their_handle through mimic_me function to generate tweet
-					result = mimic_me(their_handle)
-					
-					if result != 0:
-						twitter_api.PostUpdates('Mimicking ' + ('@%s: ' % (their_handle)) + result)
-						print 'New mimic: @%s' %(their_handle)
-					elif result == 0:
-						try:
-							twitter_api.PostUpdates('@%s ' % (their_handle) + 'Sorry, you must have at least 100 words tweeted in total to be mimicked.')
-						except twitter.error.TwitterError:
-							pass
-				else:
+			if ('mimic me' in mention.text) or ('Mimic me' in mention.text) or ('Mimic Me' in mention.text) or ('Mimic me.' in mention.text):
+				#send their_handle through mimic_me function to generate tweet
+				result = mimic_me(their_handle)
+				
+				if result != 0:
+					twitter_api.PostUpdates('Mimicking ' + ('@%s: ' % (their_handle)) + result)
+					print 'New mimic: @%s' %(their_handle)
+				elif result == 0:
 					try:
-						twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
-						print "Made an informational response to @%s" %(their_handle)
+						twitter_api.PostUpdates('@%s ' % (their_handle) + 'Sorry, you must have at least 100 words tweeted in total to be mimicked.')
 					except twitter.error.TwitterError:
 						pass
+			else:
+				try:
+					twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
+					print "Made an informational response to @%s" %(their_handle)
+				except twitter.error.TwitterError:
+					pass
 
-				if use_mysql:
-					# record the new mention (and correlated successful response/reply) into database
-					cursor.execute("SELECT MAX(id) FROM past_mimics")
-					for (id) in cursor:
-						max_id = id[0]
-					cursor.execute("INSERT INTO past_mimics (id, screen_name, date_time)"
-								"VALUES (%d, '%s', '%s')" %(max_id + 1, their_handle, mention.created_at))
-				else:
-					# store new mention (in local past_mimics.txt file)
-					file_2.write(mention_simple + '\n')
-		
-		if not new_mention:
-			print 'No new mentions.'
+			if use_mysql:
+				# record the new mention (and correlated successful response/reply) into database
+				cursor.execute("SELECT MAX(id) FROM past_mimics")
+				for (id) in cursor:
+					max_id = id[0]
+				cursor.execute("INSERT INTO past_mimics (id, screen_name, date_time)"
+							"VALUES (%d, '%s', '%s')" %(max_id + 1, their_handle, mention.created_at))
+			else:
+				# store new mention (in local past_mimics.txt file)
+				file_2.write(mention_simple + '\n')
+	
+	if not new_mention:
+		print 'No new mentions.'
 
-		# close connections for 5 min
-		if use_mysql:
-			cnx.commit()
-			cnx.close()
-		else:
-			file_1.close()
-			file_2.close()
+	# close connections
+	if use_mysql:
+		cnx.commit()
+		cnx.close()
+	else:
+		file_1.close()
+		file_2.close()
 
-		print 'Now waiting 5 minutes...'
 
+if forever:
+	print '-----------------------------------------------------'
+	print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+	# infinitely loop while running script
+	while True:
+		main()
 		# sleep for 5~ minutes before checking twitter again for new mentions
+		print 'Now waiting 5 minutes...'
 		time.sleep(300)
-
-
-# run
-main()
+else:
+	main()
