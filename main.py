@@ -185,13 +185,15 @@ def main():
 
 
 if forever:
-	print '-----------------------------------------------------'
-	print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 	# infinitely loop while running script
 	while True:
+		print '-----------------------------------------------------'
+		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 		main()
 		# sleep for 5~ minutes before checking twitter again for new mentions
 		print 'Now waiting 5 minutes...'
 		time.sleep(300)
 else:
+	print '-----------------------------------------------------'
+	print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 	main()
