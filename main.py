@@ -24,7 +24,7 @@ twitter_consumer_secret = passwords[1]
 twitter_access_token = passwords[2]
 twitter_access_secret = passwords[3]
 
-use_msql = False
+use_mysql = False
 if use_mysql:
 	import mysql.connector
 	mysql_password = passwords[4]
@@ -111,7 +111,7 @@ def main():
 		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 		# get past mimics 
-		if use_msql:
+		if use_mysql:
 			# connect to mysql for storing past_mimics data
 			cnx = mysql.connector.connect(user='travis.cramer14@gmail.com', password=my_mysql_password, 
 												host='127.0.0.1', database='my_database')
