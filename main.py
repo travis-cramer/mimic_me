@@ -104,10 +104,9 @@ def mimic_me(handle):
 
 
 def main():
-	print '-----------------------------------------------------'
 	# infinitely loop while running script
 	while True:
-		# print datetime before each check for new mentions
+		print '-----------------------------------------------------'
 		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 		# get past mimics 
