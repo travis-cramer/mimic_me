@@ -1,10 +1,9 @@
-# Last modified: May 13, 2017 4:20pm
+# Last modified: September 29, 2018 4:20pm
 # This script runs the @get_mimicked Twitter bot. 
-
-# another very important comment
 
 import sys
 import operator
+
 import requests
 import json
 import twitter
@@ -13,7 +12,7 @@ from markov_python.cc_markov import MarkovChain
 import re
 import datetime as dt
 
-import mysql.connector
+# import mysql.connector
 
 print '-----------------------------------------------------'
 
