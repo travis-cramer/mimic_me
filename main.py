@@ -157,8 +157,11 @@ def main():
 						except twitter.error.TwitterError:
 							pass
 				else:
-					twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
-					print "Made an informational response to @%s" %(their_handle)
+					try:
+						twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
+						print "Made an informational response to @%s" %(their_handle)
+					except twitter.error.TwitterError:
+						pass
 
 				if use_mysql:
 					# record the new mention (and correlated successful response/reply) into database
