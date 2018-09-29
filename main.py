@@ -161,7 +161,7 @@ def main():
 					twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
 					print "Made an informational response to %s" %(their_handle)
 
-				if use_msql:
+				if use_mysql:
 					# record the new mention (and correlated successful response/reply) into database
 					cursor.execute("SELECT MAX(id) FROM past_mimics")
 					for (id) in cursor:
