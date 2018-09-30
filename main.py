@@ -4,7 +4,6 @@
 import datetime as dt
 import json
 import operator
-import re
 import sys
 import time
 
@@ -12,6 +11,17 @@ import requests
 import twitter
 
 from markov_python.cc_markov import MarkovChain
+from utils import (
+	update_since_id,
+	get_since_id,
+	remove_last_word,
+	remove_handles,
+	remove_bad_chars,
+	get_text,
+	capitalize_first_word,
+	add_period_to_the_end,
+	list_of_words_to_string
+)
 
 # configurations
 forever = False  # runs while loop forever -- instead of using a scheduler like cron
@@ -40,74 +50,34 @@ twitter_api = twitter.Api(consumer_key=twitter_consumer_key, consumer_secret=twi
 					sleep_on_rate_limit=True)
 
 
-def update_since_id(since_id):
-	# record latest status.id that mimic me has made (this is to search for mentions only after this status was made)
-	file = open('since_id.txt', 'w')
-	file.write(str(since_id))
-	file.close()
-
-
-def get_since_id():
-	# get previous status.id of our bot's last mimic (we call it since_id)
-	try:
-		file = open('since_id.txt', 'r')
-		since_id = int(file.readline())
-		file.close()
-	except IOError:
-		since_id = None
-	return since_id
-
-
-def remove_last_word(sentence):
-	# Removes the last word of a sentence (and keeps the period).
-	# split sentence into a list of all the words, call it post
-	post = sentence.split(' ')
-	# remove the last word from post
-	post = post.remove(post[-1])
-	# iterate from list into string again
-	new_sentence = ''
-	for i in range(len(post)):
-		new_sentence = new_sentence + post[i] + ' '
-	# Remove extra space and add a period back onto the end of the new sentence.
-	new_sentence = new_sentence[:-1] + '.'
-	return new_sentence
-
-
 def mimic_me(handle):
 	# Takes in the other user's twitter handle and returns a tweet in the style of their tweets
+
+	# get and analyze the past (up to) 1000 tweets made by the user-to-be-mimicked
 	statuses = twitter_api.GetUserTimeline(screen_name=handle, count=1000, include_rts=False)
-	text = ""
-	for status in statuses:
-		if status.lang == 'en':
-			text += status.text.encode('utf-8') + ' '
-	# remove handles # take out all mentions in the generated tweet. (maybe so that random friends don't get mad)
-	handles = re.findall('@[^ ]*', text)
-	for handle in handles:
-		text = text.replace(handle, '')
-	#remove parentheses
-	bad_characters = re.findall('\(', text) + re.findall('\)', text)
-	for character in bad_characters:
-		text = text.replace(character, '')
+
+	text = get_text(statuses)
+	text = remove_handles(text)  # take out all mentions
+	text = remove_bad_chars(text)  # remove "bad" characters, like parentheses
+
+	# cannot perform markov chain generation when there are less than 100 words in total to be analyzed
 	if len(text.split(' ')) <= 100:
-		return 0
-	else:
-		pass
+		return None
+
+	# generate text using markov chains
 	mc = MarkovChain()
 	mc.add_string(text)
 	result = mc.generate_text()
-	# Capitalize the first word in the generated sentence.
-	letter = result[0][0]
-	rest_of_word = result[0][1:]
-	capped_word = letter.upper() + rest_of_word
-	result[0] = capped_word
-	# Put a period at the end of the last word in the generated sentence.
-	result[len(result) - 1] = result[len(result) - 1] + '.'
-	new_tweet = ''
-	for i in range(len(result)):
-		new_tweet = new_tweet + result[i] + ' '
-		# ensure that new tweet is 140 characters or less
+
+	# format the result
+	result = capitalize_first_word(result)
+	result = add_period_to_the_end(result)
+	new_tweet = list_of_words_to_string(result)
+
+	# ensure that new tweet is 240 characters or less
 	while len(new_tweet) > 240:
 		new_tweet = remove_last_word(new_tweet)
+
 	return new_tweet
 
 
@@ -125,7 +95,7 @@ def main():
 			# generate mimicking tweet
 			result = mimic_me(mention.user.screen_name)
 			
-			if result != 0:
+			if result:
 				status = twitter_api.PostUpdate(status=('Mimicking ' + ('@%s: '%(mention.user.screen_name)) + result),
 									   			in_reply_to_status_id=mention.id)
 				print 'New mimic: @%s' %(mention.user.screen_name)
