@@ -16,6 +16,11 @@ from markov_python.cc_markov import MarkovChain
 # configurations
 use_mysql = False  # uses a local mysql database rather than a .txt file -- requires some setup
 forever = False  # runs while loop forever -- instead of using a scheduler like cron
+verbose = False  # will print logs on every run -- false will print only logs when new tweet is posted
+
+# messages
+SORRY_RESPONSE = 'Sorry, you must have at least 100 words tweeted in total to be mimicked.'
+INFORMATION_RESPONSE = 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!'
 
 # import passwords for Twitter REST API from local text file
 passwords_file = open('passwords.txt', 'r')
@@ -46,7 +51,6 @@ def remove_last_word(sentence):
 
 	# remove the last word from post
 	post = post.remove(post[-1])
-	print post
 
 	# iterate from list into string again
 	new_sentence = ''
@@ -142,7 +146,7 @@ def main():
 		if mention_simple not in past_mimics:
 			new_mention = True
 
-			if ('mimic me' in mention.text) or ('Mimic me' in mention.text) or ('Mimic Me' in mention.text) or ('Mimic me.' in mention.text):
+			if ('mimic me' in mention.text.lower()):
 				#send their_handle through mimic_me function to generate tweet
 				result = mimic_me(their_handle)
 				
@@ -151,12 +155,13 @@ def main():
 					print 'New mimic: @%s' %(their_handle)
 				elif result == 0:
 					try:
-						twitter_api.PostUpdates('@%s ' % (their_handle) + 'Sorry, you must have at least 100 words tweeted in total to be mimicked.')
+						twitter_api.PostUpdates('@%s ' % (their_handle) + ' ' + SORRY_RESPONSE)
+						print "Made sorry response to @%s" % (their_handle)
 					except twitter.error.TwitterError:
 						pass
 			else:
 				try:
-					twitter_api.PostUpdates('@%s ' %(their_handle) + 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!')
+					twitter_api.PostUpdates('@%s ' %(their_handle) + ' ' + INFORMATION_RESPONSE)
 					print "Made an informational response to @%s" %(their_handle)
 				except twitter.error.TwitterError:
 					pass
@@ -171,9 +176,10 @@ def main():
 			else:
 				# store new mention (in local past_mimics.txt file)
 				file_2.write(mention_simple + '\n')
-	
+
 	if not new_mention:
-		print 'No new mentions.'
+		if verbose:
+			print 'No new mentions.'
 
 	# close connections
 	if use_mysql:
@@ -187,13 +193,16 @@ def main():
 if forever:
 	# infinitely loop while running script
 	while True:
-		print '-----------------------------------------------------'
-		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+		if verbose:
+			print '-----------------------------------------------------'
+			print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 		main()
 		# sleep for 5~ minutes before checking twitter again for new mentions
-		print 'Now waiting 5 minutes...'
-		time.sleep(300)
+		if verbose:
+			print 'Now waiting 5 minutes...'
+			time.sleep(300)
 else:
-	print '-----------------------------------------------------'
-	print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+	if verbose:
+		print '-----------------------------------------------------'
+		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 	main()
