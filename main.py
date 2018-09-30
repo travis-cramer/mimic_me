@@ -41,7 +41,8 @@ passwords_file.close()
 
 # instantiate API
 twitter_api = twitter.Api(consumer_key=twitter_consumer_key, consumer_secret=twitter_consumer_secret, 
-					access_token_key=twitter_access_token, access_token_secret=twitter_access_secret)
+					access_token_key=twitter_access_token, access_token_secret=twitter_access_secret,
+					sleep_on_rate_limit=True)
 
 
 def remove_last_word(sentence):
@@ -140,6 +141,7 @@ def main():
 	# check if new mention, check if 'mimic me' is in mention, then create mimic and post mimic of mentioner
 	new_mention = False
 	for mention in mentions:
+		status_id = mention.user.status_id
 		their_handle = mention.user.screen_name
 		mention_simple = mention.user.screen_name + ' ' + mention.created_at
 
@@ -151,17 +153,20 @@ def main():
 				result = mimic_me(their_handle)
 				
 				if result != 0:
-					twitter_api.PostUpdates('Mimicking ' + ('@%s: ' % (their_handle)) + result)
+					twitter_api.PostUpdate(status=('Mimicking ' + ('@%s: ' % (their_handle)) + result),
+										   in_reply_to_status_id=status_id)
 					print 'New mimic: @%s' %(their_handle)
 				elif result == 0:
 					try:
-						twitter_api.PostUpdates('@%s ' % (their_handle) + ' ' + SORRY_RESPONSE)
+						twitter_api.PostUpdate(status=('@%s ' % (their_handle) + ' ' + SORRY_RESPONSE),
+											   in_reply_to_status_id=status_id)
 						print "Made sorry response to @%s" % (their_handle)
 					except twitter.error.TwitterError:
 						pass
 			else:
 				try:
-					twitter_api.PostUpdates('@%s ' %(their_handle) + ' ' + INFORMATION_RESPONSE)
+					twitter_api.PostUpdate(status=('@%s ' %(their_handle) + ' ' + INFORMATION_RESPONSE),
+										   in_reply_to_status_id=status_id)
 					print "Made an informational response to @%s" %(their_handle)
 				except twitter.error.TwitterError:
 					pass
