@@ -112,7 +112,7 @@ def main():
 									   			in_reply_to_status_id=mention.id)
 				print 'New mimic: @%s' %(mention.user.screen_name)
 				update_since_id(status.id)
-			elif result == 0:
+			else:
 				print("making sorry response")
 				try:
 					status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + SORRY_RESPONSE),
