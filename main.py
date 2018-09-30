@@ -136,7 +136,7 @@ def main():
 			past_mimics[past_mimics.index(mimic)] = mimic.replace('\n', '')
 
 	# collect 20 most recent mentions
-	mentions = twitter_api.GetMentions(count=20)
+	mentions = twitter_api.GetMentions(count=5)
 
 	# check if new mention, check if 'mimic me' is in mention, then create mimic and post mimic of mentioner
 	new_mention = False
