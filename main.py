@@ -150,6 +150,7 @@ def main():
 	if verbose and not new_mention:
 			print 'No new mentions.'
 
+
 if __name__ == "__main__":
 	if forever:
 		# infinitely loop while running script
