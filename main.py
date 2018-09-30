@@ -141,7 +141,7 @@ def main():
 	# check if new mention, check if 'mimic me' is in mention, then create mimic and post mimic of mentioner
 	new_mention = False
 	for mention in mentions:
-		status_id = mention.user.status_id
+		status_id = mention.id
 		their_handle = mention.user.screen_name
 		mention_simple = mention.user.screen_name + ' ' + mention.created_at
 
