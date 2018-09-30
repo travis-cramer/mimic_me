@@ -121,17 +121,17 @@ def main():
 			print 'No new mentions.'
 
 
-if __name__ == "__main__":
-	if forever:
-		# infinitely loop while running script
-		while True:
-			if verbose:
-				print '-----------------------------------------------------'
-				print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
-			main()
-			# sleep for 5~ minutes before checking twitter again for new mentions
-			if verbose:
-				print 'Now waiting 5 minutes...'
-				time.sleep(300)
-	else:
+
+if forever:
+	# infinitely loop while running script
+	while True:
+		if verbose:
+			print '-----------------------------------------------------'
+			print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 		main()
+		# sleep for 5~ minutes before checking twitter again for new mentions
+		if verbose:
+			print 'Now waiting 5 minutes...'
+			time.sleep(300)
+else:
+	main()
