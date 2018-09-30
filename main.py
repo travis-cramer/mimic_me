@@ -14,7 +14,6 @@ import twitter
 from markov_python.cc_markov import MarkovChain
 
 # configurations
-use_mysql = False  # uses a local mysql database rather than a .txt file -- requires some setup
 forever = False  # runs while loop forever -- instead of using a scheduler like cron
 verbose = False  # will print logs on every run -- false will print only logs when new tweet is posted
 
@@ -33,10 +32,6 @@ twitter_consumer_secret = passwords[1]
 twitter_access_token = passwords[2]
 twitter_access_secret = passwords[3]
 
-if use_mysql:
-	import mysql.connector
-	mysql_password = passwords[4]
-
 passwords_file.close()
 
 # instantiate API
@@ -45,19 +40,34 @@ twitter_api = twitter.Api(consumer_key=twitter_consumer_key, consumer_secret=twi
 					sleep_on_rate_limit=True)
 
 
+def update_since_id(since_id):
+	# record latest status.id that mimic me has made (this is to search for mentions only after this status was made)
+	file = open('since_id.txt', 'w')
+	file.write(str(since_id))
+	file.close()
+
+
+def get_since_id():
+	# get previous status.id of our bot's last mimic (we call it since_id)
+	try:
+		file = open('since_id.txt', 'r')
+		since_id = int(file.readline())
+		file.close()
+	except IOError:
+		since_id = None
+	return since_id
+
+
 def remove_last_word(sentence):
 	# Removes the last word of a sentence (and keeps the period).
 	# split sentence into a list of all the words, call it post
 	post = sentence.split(' ')
-
 	# remove the last word from post
 	post = post.remove(post[-1])
-
 	# iterate from list into string again
 	new_sentence = ''
 	for i in range(len(post)):
 		new_sentence = new_sentence + post[i] + ' '
-
 	# Remove extra space and add a period back onto the end of the new sentence.
 	new_sentence = new_sentence[:-1] + '.'
 	return new_sentence
@@ -70,129 +80,75 @@ def mimic_me(handle):
 	for status in statuses:
 		if status.lang == 'en':
 			text += status.text.encode('utf-8') + ' '
-
-
 	# remove handles # take out all mentions in the generated tweet. (maybe so that random friends don't get mad)
 	handles = re.findall('@[^ ]*', text)
 	for handle in handles:
 		text = text.replace(handle, '')
-
 	#remove parentheses
 	bad_characters = re.findall('\(', text) + re.findall('\)', text)
 	for character in bad_characters:
 		text = text.replace(character, '')
-
 	if len(text.split(' ')) <= 100:
 		return 0
 	else:
 		pass
-
 	mc = MarkovChain()
 	mc.add_string(text)
 	result = mc.generate_text()
-
 	# Capitalize the first word in the generated sentence.
 	letter = result[0][0]
 	rest_of_word = result[0][1:]
 	capped_word = letter.upper() + rest_of_word
 	result[0] = capped_word
-
 	# Put a period at the end of the last word in the generated sentence.
 	result[len(result) - 1] = result[len(result) - 1] + '.'
-
 	new_tweet = ''
 	for i in range(len(result)):
 		new_tweet = new_tweet + result[i] + ' '
-
 		# ensure that new tweet is 140 characters or less
 	while len(new_tweet) > 240:
 		new_tweet = remove_last_word(new_tweet)
-
 	return new_tweet
 
 
 def main():
-	# get past mimics 
-	if use_mysql:
-		# connect to mysql for storing past_mimics data
-		cnx = mysql.connector.connect(user='travis.cramer14@gmail.com', password=my_mysql_password, 
-											host='127.0.0.1', database='my_database')
-		# instantiate cursor for querying
-		cursor = cnx.cursor()
-
-		# get all past mimics into list
-		cursor.execute("SELECT screen_name, date_time FROM past_mimics")
-		past_mimics = []
-		for (screen_name, date_time) in cursor:
-			past_mimics.append(screen_name + ' ' + date_time)
-	else:
-		# open past_mimics for reading and appending
-		file_1 = open('past_mimics.txt', 'r')
-		file_2 = open('past_mimics.txt', 'a')
-
-		# get all past_mimics into list
-		past_mimics = file_1.readlines()
-		for mimic in past_mimics:
-			past_mimics[past_mimics.index(mimic)] = mimic.replace('\n', '')
-
-	# collect 20 most recent mentions
-	mentions = twitter_api.GetMentions(count=5)
-
-	# check if new mention, check if 'mimic me' is in mention, then create mimic and post mimic of mentioner
 	new_mention = False
+	since_id = get_since_id()
+	mentions = twitter_api.GetMentions(since_id=since_id)  # defaults to 20 most recent since status with id since_id
+
+	# for each new mention, either reply with mimic, SORRY_RESPONSE, or INFORMATION_RESPONSE
 	for mention in mentions:
-		status_id = mention.id
-		their_handle = mention.user.screen_name
-		mention_simple = mention.user.screen_name + ' ' + mention.created_at
+		# there exists new mention(s)
+		new_mention = True
 
-		if mention_simple not in past_mimics:
-			new_mention = True
-
-			if ('mimic me' in mention.text.lower()):
-				#send their_handle through mimic_me function to generate tweet
-				result = mimic_me(their_handle)
-				
-				if result != 0:
-					twitter_api.PostUpdate(status=('Mimicking ' + ('@%s: ' % (their_handle)) + result),
-										   in_reply_to_status_id=status_id)
-					print 'New mimic: @%s' %(their_handle)
-				elif result == 0:
-					try:
-						twitter_api.PostUpdate(status=('@%s ' % (their_handle) + ' ' + SORRY_RESPONSE),
-											   in_reply_to_status_id=status_id)
-						print "Made sorry response to @%s" % (their_handle)
-					except twitter.error.TwitterError:
-						pass
-			else:
+		if ('mimic me' in mention.text.lower()):
+			# generate mimicking tweet
+			result = mimic_me(mention.user.screen_name)
+			
+			if result != 0:
+				status = twitter_api.PostUpdate(status=('Mimicking ' + ('@%s: '%(mention.user.screen_name)) + result),
+									   			in_reply_to_status_id=mention.id)
+				print 'New mimic: @%s' %(mention.user.screen_name)
+				update_since_id(status.id)
+			elif result == 0:
 				try:
-					twitter_api.PostUpdate(status=('@%s ' %(their_handle) + ' ' + INFORMATION_RESPONSE),
-										   in_reply_to_status_id=status_id)
-					print "Made an informational response to @%s" %(their_handle)
+					status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + SORRY_RESPONSE),
+										   			in_reply_to_status_id=mention.id)
+					print "Made sorry response to @%s" % (mention.user.screen_name)
+					update_since_id(status.id)
 				except twitter.error.TwitterError:
 					pass
+		else:
+			try:
+				status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + INFORMATION_RESPONSE),
+									   			in_reply_to_status_id=mention.id)
+				print "Made an informational response to @%s" %(mention.user.screen_name)
+				update_since_id(status.id)
+			except twitter.error.TwitterError:
+				pass
 
-			if use_mysql:
-				# record the new mention (and correlated successful response/reply) into database
-				cursor.execute("SELECT MAX(id) FROM past_mimics")
-				for (id) in cursor:
-					max_id = id[0]
-				cursor.execute("INSERT INTO past_mimics (id, screen_name, date_time)"
-							"VALUES (%d, '%s', '%s')" %(max_id + 1, their_handle, mention.created_at))
-			else:
-				# store new mention (in local past_mimics.txt file)
-				file_2.write(mention_simple + '\n')
-
-	if not new_mention:
-		if verbose:
+	if verbose and not new_mention:
 			print 'No new mentions.'
-
-	# close connections
-	if use_mysql:
-		cnx.commit()
-		cnx.close()
-	else:
-		file_1.close()
-		file_2.close()
 
 
 if forever:
@@ -207,7 +163,4 @@ if forever:
 			print 'Now waiting 5 minutes...'
 			time.sleep(300)
 else:
-	if verbose:
-		print '-----------------------------------------------------'
-		print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
 	main()
