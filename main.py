@@ -56,13 +56,9 @@ def mimic_me(handle):
 	# get and analyze the past (up to) 1000 tweets made by the user-to-be-mimicked
 	statuses = twitter_api.GetUserTimeline(screen_name=handle, count=1000, include_rts=False)
 
-	print("here 1")
 	text = get_text(statuses)
-	print("here 2")
 	text = remove_handles(text)  # take out all mentions
-	print("here 3")
 	text = remove_bad_chars(text)  # remove "bad" characters, like parentheses
-	print("here 4")
 
 	# cannot perform markov chain generation when there are less than 100 words in total to be analyzed
 	if len(text.split(' ')) <= 100:
@@ -73,15 +69,10 @@ def mimic_me(handle):
 	mc.add_string(text)
 	result = mc.generate_text()
 
-	print("here 5")
-
 	# format the result
 	result = capitalize_first_word(result)
-	print("here 6")
 	result = add_period_to_the_end(result)
-	print("here 7")
 	new_tweet = list_of_words_to_string(result)
-	print("here 8")
 
 	# ensure that new tweet is 240 characters or less
 	while len(new_tweet) > 240:
@@ -102,8 +93,6 @@ def main():
 
 		if ('mimic me' in mention.text.lower()):
 
-			print("Saw a mimic request")
-
 			# generate mimicking tweet
 			result = mimic_me(mention.user.screen_name)
 			
@@ -113,14 +102,13 @@ def main():
 				print 'New mimic: @%s' %(mention.user.screen_name)
 				update_since_id(status.id)
 			else:
-				print("making sorry response")
 				try:
 					status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + SORRY_RESPONSE),
 										   			in_reply_to_status_id=mention.id)
 					print "Made sorry response to @%s" % (mention.user.screen_name)
 					update_since_id(status.id)
 				except twitter.error.TwitterError:
-					print("Duplicate Sorry response error")
+					print "Duplicate SORRY_RESPONSE error"
 		else:
 			try:
 				status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + INFORMATION_RESPONSE),
@@ -128,10 +116,10 @@ def main():
 				print "Made an informational response to @%s" %(mention.user.screen_name)
 				update_since_id(status.id)
 			except twitter.error.TwitterError:
-				print("Duplicate informational response error")
+				print "Duplicate INFORMATION_RESPONSE error"
 
 	if verbose and not new_mention:
-			print 'No new mentions.'
+			print "No new mentions."
 
 
 if __name__ == "__main__":
