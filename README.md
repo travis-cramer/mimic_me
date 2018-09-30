@@ -10,10 +10,10 @@ The script main.py will take care of almost everything.
 
 But some additions are needed:
 
-* A text file named 'passwords.txt' containing your twitter consumer key, twitter consumer secret, twitter access token,
-    twitter access secret (for your [Twitter REST API](https://dev.twitter.com/rest/public)), and your local administrative password. An example of this document is 
-    in the repository as "passwords_example.txt".
+* A text file named 'passwords.txt' containing your twitter consumer key, twitter consumer secret, twitter access token, twitter access secret (for your [Twitter REST API](https://dev.twitter.com/rest/public)), each on their own line in that order. An example of this document (which includes the optional MySQL db password) is in the repository as "passwords_example.txt".
 
-* A locally hosted [MySQL](https://www.mysql.com/) database named 'my_database' with a table named 'past_mimics' with columns 
-    (id INT, screen_name TEXT, date_time TEXT). Of course, you may choose to name these things differently, just edit the 
-    main.py script accordingly.                                                                                                                                         NOTE: If you do not wish to bother MySQL, another option for recording past mimics is in the code, it's just commented out. You will need to uncomment the code responsible for opening the text file "past_mimics.txt" and for writing into it when a new mention is found. And then of course remove the code responsible for connecting with MySQL.
+* A text file called "past_mimics.txt" which the script will use to record all mentions that it has previously responded to. It uses this to check whether or not it needs to create a new mention.
+
+* OR: A locally hosted [MySQL](https://www.mysql.com/) database named 'my_database' with a table named 'past_mimics' with columns (id INT, screen_name TEXT, date_time TEXT). If you choose to do this, you will have to edit the script to add your db credentials and add your db admin password to the passwords.txt file.                                                                                                                                         
+    
+
