@@ -75,7 +75,7 @@ def remove_last_word(sentence):
 
 def mimic_me(handle):
 	# Takes in the other user's twitter handle and returns a tweet in the style of their tweets
-	statuses = twitter_api.GetUserTimeline(screen_name = handle, count = 1000, include_rts = False)
+	statuses = twitter_api.GetUserTimeline(screen_name=handle, count=1000, include_rts=False)
 	text = ""
 	for status in statuses:
 		if status.lang == 'en':
@@ -150,17 +150,17 @@ def main():
 	if verbose and not new_mention:
 			print 'No new mentions.'
 
-
-if forever:
-	# infinitely loop while running script
-	while True:
-		if verbose:
-			print '-----------------------------------------------------'
-			print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+if __name__ == "__main__":
+	if forever:
+		# infinitely loop while running script
+		while True:
+			if verbose:
+				print '-----------------------------------------------------'
+				print dt.datetime.now().strftime("%Y-%m-%d %H:%M")
+			main()
+			# sleep for 5~ minutes before checking twitter again for new mentions
+			if verbose:
+				print 'Now waiting 5 minutes...'
+				time.sleep(300)
+	else:
 		main()
-		# sleep for 5~ minutes before checking twitter again for new mentions
-		if verbose:
-			print 'Now waiting 5 minutes...'
-			time.sleep(300)
-else:
-	main()
