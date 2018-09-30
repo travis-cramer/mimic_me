@@ -135,5 +135,4 @@ if __name__ == "__main__":
 				print 'Now waiting 5 minutes...'
 				time.sleep(300)
 	else:
-		print("Made it into __main__ block")
 		main()
