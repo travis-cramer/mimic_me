@@ -77,6 +77,6 @@ def add_period_to_the_end(sentence):
 def list_of_words_to_string(sentence):
 	# takes in a sentence (an array of words) and returns a string
 	new_tweet = ''
-	for i in range(len(result)):
-		new_tweet = new_tweet + result[i] + ' '
+	for i in range(len(sentence)):
+		new_tweet = new_tweet + sentence[i] + ' '
 	return new_tweet
