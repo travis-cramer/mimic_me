@@ -23,6 +23,10 @@ from utils import (
 	list_of_words_to_string
 )
 
+# default to utf8 instead of ascii
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
 # configurations
 forever = False  # runs while loop forever -- instead of using a scheduler like cron
 verbose = False  # will print logs on every run -- false will print only logs when new tweet is posted
