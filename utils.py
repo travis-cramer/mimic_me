@@ -1,5 +1,6 @@
 # utility functions for main.py (mostly string manipulation and munging)
 import re
+import twitter
 
 
 def get_twitter_client():
