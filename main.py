@@ -12,6 +12,7 @@ import twitter
 
 from markov_python.cc_markov import MarkovChain
 from utils import (
+	get_twitter_client,
 	update_since_id,
 	get_since_id,
 	remove_last_word,
@@ -35,23 +36,8 @@ verbose = False  # will print logs on every run -- false will print only logs wh
 SORRY_RESPONSE = 'Sorry, you must have at least 100 words tweeted in total to be mimicked.'
 INFORMATION_RESPONSE = 'Well, hi there! Tweet at me with the words "Mimic me" to get a mimicking response!'
 
-# import passwords for Twitter REST API from local text file
-passwords_file = open('passwords.txt', 'r')
-passwords = passwords_file.readlines()
-for password in passwords:
-	passwords[passwords.index(password)] = password.replace('\n', '')
-
-twitter_consumer_key = passwords[0]
-twitter_consumer_secret = passwords[1]
-twitter_access_token = passwords[2]
-twitter_access_secret = passwords[3]
-
-passwords_file.close()
-
 # instantiate API
-twitter_api = twitter.Api(consumer_key=twitter_consumer_key, consumer_secret=twitter_consumer_secret, 
-					access_token_key=twitter_access_token, access_token_secret=twitter_access_secret,
-					sleep_on_rate_limit=True)
+twitter_api = get_twitter_client()
 
 
 def mimic_me(handle):
@@ -86,45 +72,19 @@ def mimic_me(handle):
 
 
 def main():
-	new_mention = False
-	since_id = get_since_id()
-	mentions = twitter_api.GetMentions(since_id=since_id)  # defaults to 20 most recent since status with id since_id
-
-	# for each new mention, either reply with mimic, SORRY_RESPONSE, or INFORMATION_RESPONSE
-	for mention in mentions:
-		# there exists new mention(s)
-		new_mention = True
-
-		if ('mimic me' in mention.text.lower()):
-
-			# generate mimicking tweet
-			result = mimic_me(mention.user.screen_name)
-			
-			if result:
-				status = twitter_api.PostUpdate(status=('Mimicking ' + ('@%s: '%(mention.user.screen_name)) + result),
-									   			in_reply_to_status_id=mention.id)
-				print 'New mimic: @%s' %(mention.user.screen_name)
-				update_since_id(status.id)
-			else:
-				try:
-					status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + SORRY_RESPONSE),
-										   			in_reply_to_status_id=mention.id)
-					print "Made sorry response to @%s" % (mention.user.screen_name)
-					update_since_id(status.id)
-				except twitter.error.TwitterError:
-					print "Duplicate SORRY_RESPONSE error"
-		else:
-			try:
-				status = twitter_api.PostUpdate(status=('@%s '%(mention.user.screen_name) + ' ' + INFORMATION_RESPONSE),
-									   			in_reply_to_status_id=mention.id)
-				print "Made an informational response to @%s" %(mention.user.screen_name)
-				update_since_id(status.id)
-			except twitter.error.TwitterError:
-				print "Duplicate INFORMATION_RESPONSE error"
-
-	if verbose and not new_mention:
-			print "No new mentions."
-
+	result = mimic_me('HolianVI')
+	
+	if result:
+		status = twitter_api.PostUpdate(status=('Mimicking ' + ('@%s: '%('HolianVI')) + result))
+		print 'New mimic: @%s' %('HolianVI')
+		update_since_id(status.id)
+	else:
+		try:
+			status = twitter_api.PostUpdate(status=('@%s '%('HolianVI') + ' ' + SORRY_RESPONSE))
+			print "Made sorry response to @%s" % ('HolianVI')
+			update_since_id(status.id)
+		except twitter.error.TwitterError:
+			print "Duplicate SORRY_RESPONSE error"
 
 if __name__ == "__main__":
 	if forever:

@@ -1,6 +1,28 @@
 # utility functions for main.py (mostly string manipulation and munging)
 import re
 
+
+def get_twitter_client():
+	# import passwords for Twitter REST API from local text file
+	passwords_file = open('passwords.txt', 'r')
+	passwords = passwords_file.readlines()
+	for password in passwords:
+		passwords[passwords.index(password)] = password.replace('\n', '')
+
+	twitter_consumer_key = passwords[0]
+	twitter_consumer_secret = passwords[1]
+	twitter_access_token = passwords[2]
+	twitter_access_secret = passwords[3]
+
+	passwords_file.close()
+
+	# instantiate API
+	twitter_api = twitter.Api(consumer_key=twitter_consumer_key, consumer_secret=twitter_consumer_secret, 
+						access_token_key=twitter_access_token, access_token_secret=twitter_access_secret,
+						sleep_on_rate_limit=True)
+	return twitter_api
+
+
 def update_since_id(since_id):
 	# record latest status.id that mimic me has made (this is to search for mentions only after this status was made)
 	file = open('since_id.txt', 'w')
